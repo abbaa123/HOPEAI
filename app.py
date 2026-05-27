@@ -1,7 +1,6 @@
 import streamlit as st
 from google import genai
 from google.genai import types
-import os
 
 # ==========================================
 # 1. إعدادات الهوية البصرية لـ Hope AI
@@ -23,7 +22,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. القائمة الجانبية (شعار المنصة فقط)
+# 2. القائمة الجانبية (شعار المنصة)
 # ==========================================
 with st.sidebar:
     st.markdown("<h1 style='text-align: center; font-size: 50px;'>✨</h1>", unsafe_allow_html=True)
@@ -49,42 +48,40 @@ hope_instruction = """
 قدم الإجابات على شكل نقاط ومنظمة جداً.
 """
 
-# جلب المفتاح تلقائياً من إعدادات السيرفر الآمنة بدون إظهاره للمستخدم
-api_key = st.secrets.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
-if not api_key:
-    st.error("⚠️ خطأ في النظام: لم يتم ضبط مفتاح التفعيل السري في السيرفر بعد.")
-else:
-    try:
-        client = genai.Client(api_key=api_key)
-        
-        if "messages" not in st.session_state:
-            st.session_state.messages = []
+# دمج المفتاح الخاص بك مباشرة داخل الكود ليعمل فوراً بدون الاعتماد على السيرفر
+api_key = "AIzaSyDDjq5CmlGrYfDuzZsNmCuH9daqcddgiSo"
 
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
+try:
+    client = genai.Client(api_key=api_key)
+    
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
 
-        if prompt := st.chat_input("اسأل Hope AI عن أي شيء.."):
-            with st.chat_message("user"):
-                st.markdown(prompt)
-            st.session_state.messages.append({"role": "user", "content": prompt})
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
-            with st.chat_message("assistant", avatar="✨"):
-                message_placeholder = st.empty()
-                
-                response = client.models.generate_content(
-                    model='gemini-2.5-flash',
-                    contents=prompt,
-                    config=types.GenerateContentConfig(
-                        system_instruction=hope_instruction,
-                        temperature=0.7,
-                    )
+    if prompt := st.chat_input("اسأل Hope AI عن أي شيء.."):
+        with st.chat_message("user"):
+            st.markdown(prompt)
+        st.session_state.messages.append({"role": "user", "content": prompt})
+
+        with st.chat_message("assistant", avatar="✨"):
+            message_placeholder = st.empty()
+            
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    system_instruction=hope_instruction,
+                    temperature=0.7,
                 )
-                
-                full_response = response.text
-                message_placeholder.markdown(full_response)
-                
-            st.session_state.messages.append({"role": "assistant", "content": full_response})
+            )
+            
+            full_response = response.text
+            message_placeholder.markdown(full_response)
+            
+        st.session_state.messages.append({"role": "assistant", "content": full_response})
 
-    except Exception as e:
-        st.error("حدث خطأ أثناء الاتصال بالخادم الذكي. يرجى المحاولة لاحقاً.")
+except Exception as e:
+    st.error("حدث خطأ أثناء الاتصال بالخادم الذكي. يرجى المحاولة لاحقاً.")

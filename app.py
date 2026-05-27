@@ -50,8 +50,7 @@ hope_instruction = """
 """
 
 # جلب المفتاح تلقائياً من إعدادات السيرفر الآمنة بدون إظهاره للمستخدم
-api_key = os.environ.get("GEMINI_API_KEY")
-
+api_key = st.secrets.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
 if not api_key:
     st.error("⚠️ خطأ في النظام: لم يتم ضبط مفتاح التفعيل السري في السيرفر بعد.")
 else:
